@@ -1,0 +1,5 @@
+{
+  "mongoURI": "mongodb://localhost:8534/sb-bitan",
+  "jwtSecret": "ar-security-token",
+  "jwtExpiration": 360000
+}
