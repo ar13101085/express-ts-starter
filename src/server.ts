@@ -5,6 +5,8 @@ import {handleErrors} from "./middleware/error-handler";
 import connectDB from "../config/database";
 import auth from "./routes/api/auth";
 import user from "./routes/api/user";
+import upload from "./routes/api/file-upload";
+
 import * as cors from "cors"
 
 const app = express();
@@ -31,6 +33,7 @@ app.get("/", (_req, res) => {
 
 app.use("/api/auth", auth);
 app.use("/api/user", user);
+app.use("/api/upload", upload);
 
 app.use(handleErrors);
 
