@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 
 import Payload from "../../types/Payload";
 import Request from "../../types/Request";
-import User, { IUser } from "../../models/User";
+import User, { IUser } from "../../models/schema-model/User";
 
 const router: Router = Router();
 

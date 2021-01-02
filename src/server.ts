@@ -1,9 +1,11 @@
 import bodyParser from "body-parser";
 import express from "express";
 
+import {handleErrors} from "./middleware/error-handler";
 import connectDB from "../config/database";
 import auth from "./routes/api/auth";
 import user from "./routes/api/user";
+import * as cors from "cors"
 
 const app = express();
 
@@ -14,6 +16,11 @@ connectDB();
 app.set("port", process.env.PORT || 5000);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors.default());
+
+//static file configure
+const path:string=(__dirname + '/uploads').split("/dist/src/uploads")[0]+"/uploads";
+app.use("/static",express.static(path));
 
 // @route   GET /
 // @desc    Test Base API
@@ -24,6 +31,8 @@ app.get("/", (_req, res) => {
 
 app.use("/api/auth", auth);
 app.use("/api/user", user);
+
+app.use(handleErrors);
 
 const port = app.get("port");
 const server = app.listen(port, () =>
