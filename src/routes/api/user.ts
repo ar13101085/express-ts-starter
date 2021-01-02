@@ -1,14 +1,15 @@
 import bcrypt from "bcryptjs";
 import config from "config";
-import { Router, Response } from "express";
+import { Router, Response, NextFunction } from "express";
 import { check, validationResult } from "express-validator/check";
 import gravatar from "gravatar";
-import HttpStatusCodes from "http-status-codes";
 import jwt from "jsonwebtoken";
 
 import Payload from "../../types/Payload";
 import Request from "../../types/Request";
 import User, { IUser } from "../../models/schema-model/User";
+import { GeneralError } from "../../utils/errors";
+import { DefaultPayloadModel } from "../../models/DefaultPayload";
 
 const router: Router = Router();
 
@@ -24,67 +25,67 @@ router.post(
       "Please enter a password with 6 or more characters"
     ).isLength({ min: 6 })
   ],
-  async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(HttpStatusCodes.BAD_REQUEST)
-        .json({ errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let user: IUser = await User.findOne({ email });
-
-      if (user) {
-        return res.status(HttpStatusCodes.BAD_REQUEST).json({
-          errors: [
-            {
-              msg: "User already exists"
-            }
-          ]
-        });
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        throw new GeneralError(errors.array().join(","));
       }
 
-      const options: gravatar.Options = {
-        s: "200",
-        r: "pg",
-        d: "mm"
-      };
+      const { email, password } = req.body;
+      try {
+        let user: IUser = await User.findOne({ email });
 
-      const avatar = gravatar.url(email, options);
-
-      const salt = await bcrypt.genSalt(10);
-      const hashed = await bcrypt.hash(password, salt);
-
-      // Build user object based on IUser
-      const userFields = {
-        email,
-        password: hashed,
-        avatar
-      };
-
-      user = new User(userFields);
-
-      await user.save();
-
-      const payload: Payload = {
-        userId: user.id
-      };
-
-      jwt.sign(
-        payload,
-        config.get("jwtSecret"),
-        { expiresIn: config.get("jwtExpiration") },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
+        if (user) {
+          throw new GeneralError( "User already exists");
         }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send("Server Error");
+
+        const options: gravatar.Options = {
+          s: "200",
+          r: "pg",
+          d: "mm"
+        };
+
+
+        const salt = await bcrypt.genSalt(10);
+        const hashed = await bcrypt.hash(password, salt);
+
+        // Build user object based on IUser
+        const userFields = {
+          email,
+          password: hashed
+        };
+
+        user = new User(userFields);
+
+        await user.save();
+
+        const payload: Payload = {
+          userId: user.id
+        };
+
+        jwt.sign(
+          payload,
+          config.get("jwtSecret"),
+          { expiresIn: config.get("jwtExpiration") },
+          (err, token) => {
+            if (err) throw err;
+
+            let response: DefaultPayloadModel<string> = {
+              isSuccess: true,
+              msg: "Successfully generate token",
+              data: token
+            }
+            res.json(response);
+          }
+        );
+      } catch (err) {
+        next(err);
+      }
+    } catch (error) {
+      next(error);
     }
+
   }
 );
 
