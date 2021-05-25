@@ -1,10 +1,10 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator/check';
-import User, { IUser } from 'src/models/User';
-import { GeneralError } from 'src/utils/errors';
+import User, { IUser } from '../../../models/User';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { DefaultPayloadModel } from 'src/types/default-payload';
+import { GeneralError } from '../../../utils/errors';
 const router = express.Router();
 router.post("/signup",
     [
