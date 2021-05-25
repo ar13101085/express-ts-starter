@@ -3,7 +3,7 @@ Install dependencies
     npm run tsc
 
 Build and run the project with auto reload (nodemon)
-    npm run server
+    npm run dev
 
 Build and run the project
     npm run start

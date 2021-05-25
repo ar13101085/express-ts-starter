@@ -6,8 +6,10 @@ export class GeneralError extends Error {
     getCode() {
         if (this instanceof BadRequest) {
             return 400;
-        } if (this instanceof NotFound) {
+        }else if (this instanceof NotFound) {
             return 404;
+        }else if (this instanceof AuthError) {
+            return 401;
         }
         return 500;
     }
@@ -15,3 +17,4 @@ export class GeneralError extends Error {
 
 export class BadRequest extends GeneralError { }
 export class NotFound extends GeneralError { }
+export class AuthError extends GeneralError { }

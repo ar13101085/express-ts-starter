@@ -1,29 +1,21 @@
-import config from "config";
-import { Response, NextFunction } from "express";
-import HttpStatusCodes from "http-status-codes";
+import { Response, NextFunction, Request } from "express";
 import jwt from "jsonwebtoken";
+import { AuthError } from "src/utils/errors";
 
-import Payload from "../types/Payload";
-import Request from "../types/Request";
-
-export default function(req: Request, res: Response, next: NextFunction) {
+export const auth = function (req: Request, res: Response, next: NextFunction) {
   // Get token from header
   const token = req.header("x-auth-token");
-  
+
   // Check if no token
   if (!token) {
-    return res
-      .status(HttpStatusCodes.UNAUTHORIZED)
-      .json({ msg: "No token, authorization denied" });
+    throw new AuthError("Please login first to view this content.");
   }
   // Verify token
   try {
-    const payload: Payload | any = jwt.verify(token, config.get("jwtSecret"));
+    const payload: any = jwt.verify(token, process.env.JWT_SECRET_KEY || "");
     req.userId = payload.userId;
     next();
   } catch (err) {
-    res
-      .status(HttpStatusCodes.UNAUTHORIZED)
-      .json({ msg: "Token is not valid" });
+    next(err);
   }
 }
