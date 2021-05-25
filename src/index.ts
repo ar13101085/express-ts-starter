@@ -1,3 +1,4 @@
+require('source-map-support').install()
 require('dotenv').config();
 import { ConnectionOptions, connect } from "mongoose";
 import { app } from "./app";

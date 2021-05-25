@@ -8,21 +8,20 @@ import { GeneralError } from '../../../utils/errors';
 const router = express.Router();
 router.post("/signup",
     [
-        check("userName", "Please include a valid email").not().isEmpty(),
+        check("userName", "Please include a valid email").isLength({ min: 0 }),
         check(
             "password",
             "Please enter a password with 6 or more characters"
         ).isLength({ min: 6 })
     ], async (req: Request, res: Response, next: NextFunction) => {
-
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            throw new GeneralError(errors.array().join(","));
-        }
-
-        const { userName, password } = req.body;
-
         try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                throw new GeneralError("invalid input.please check your data.");
+            }
+
+            const { userName, password } = req.body;
+
             let user: IUser | null = await User.findOne({ userName });
 
             if (user) {
@@ -51,7 +50,7 @@ router.post("/signup",
 
                     let response: DefaultPayloadModel<string | undefined> = {
                         isSuccess: true,
-                        msg: "Successfully generate token",
+                        msg: "Successfully create account & generate token",
                         data: token
                     }
                     res.json(response);
